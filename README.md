@@ -13,7 +13,7 @@ Assume arxPy running on an arbitrary HOST and PORT, these two parameters need to
 ```
 this will wire school to the data endpoint.
 
-## What can LSTM school for you?
+## What can LSTM school do for you?
 It maintains your tensorflow Neural Network Model on any host or server. The project is coded in a transparent and toy-ish way to make customizations easy. By default a LSTM architecture is loaded (blueprint in `build.py`).
 Use `config.json` to set the training parameters.
 ```bash
