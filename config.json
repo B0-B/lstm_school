@@ -1,0 +1,14 @@
+{
+    "host": "http://localhost",
+    "port": 8080,
+    "input_size": 600,
+    "feature_size": 36,
+    "neurons": 500,
+    "cadence": false, 
+    "model_path": "./model/model.h5",
+    "batch_size": 5,
+    "epochs": 2,
+    "trigger_time": "11:01",
+    "sleep_min": 360,
+    "base_currency": "USD"
+}
