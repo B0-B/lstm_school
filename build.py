@@ -21,7 +21,7 @@ class CustomModel(Sequential):
     def __init__(self, sequence_length=60, feature_length=24, epochs=1, batch_size=1, neurons=100):
 
         # -- initialize --
-        Sequential.__init__(self)
+        super(CustomModel, self).__init__()
 
         # make parameters global
         self.sequence_length = sequence_length

@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
+
 import json
 from pathlib import Path
 from traceback import print_exc
 from datetime import datetime, timedelta
+from time import sleep
+def highlight (stdout):
+    print(f"\t\033[1;33m{stdout}\033[1;35m")
+    sleep(.5)
+highlight('load modules ...')
 from client import client
 from build import CustomModel
 from tensorflow.keras.models import load_model
 from train import school
-from time import sleep
+highlight('done.\n')
 
-print('start ...')
-def highlight (stdout):
-    print(f"\n\t\033[1;33m{stdout}\033[1;35m\n")
-    sleep(.5)
+
 def waitingForSchedule (time):
     return datetime.now().strftime("%H:%M") != time
 class JSON(dict):
@@ -26,7 +29,7 @@ highlight('load config ...')
 # load config
 with open(Path('config.json').absolute()) as f:
     p = JSON(json.loads(f.read()))
-highlight('done.')
+highlight('done.\n')
 
 
 highlight('load model ...')
@@ -39,14 +42,16 @@ if modelPath.exists():
 else:
     highlight(f'nothing found, build new model ...')
     model = CustomModel(p.input_size, p.feature_size, p.epochs, p.batch_size, p.neurons)
-highlight('done.')
+highlight('done.\n')
 
 # load training tool
+highlight('init school ...')
 gym = school(model, dumpPath=modelPath)
+highlight('done.\n')
 
 highlight('connect to arxPy API ...')
 arx = client(p.host, p.port)
-highlight('done.')
+highlight('done.\n')
 
 # override start minutes to match with kraken
 hours = p.trigger_time.split(':')[0]
@@ -58,7 +63,8 @@ startTimeOverride = f'{hours}:{min}'
 if __name__ == '__main__':
 
     highlight(f'waiting for scheduled training at {p.trigger_time} ...')
-    #while waitingForSchedule(p.trigger_time): sleep(10)
+    if p.scheduled:
+        while waitingForSchedule(p.trigger_time): sleep(10)
     while True:
 
         try:
@@ -71,7 +77,6 @@ if __name__ == '__main__':
                 try:
                     pair = coin + p.base_currency
                     dataFrame = arx.timeFrameData(pair, f'{startDate} {startTimeOverride}', f'{stopDate} {startTimeOverride}')["data"][-(p.input_size+p.feature_size):]
-                    
                     print(type(dataFrame))
                     x, y = [], []
                     for i in range((p.input_size+p.feature_size)):
@@ -80,7 +85,6 @@ if __name__ == '__main__':
                             x.append(closePrice)
                         else:
                             y.append(closePrice)
-                    # add to training set
                     if len(x) == p.input_size and len(y) == p.feature_size:
                         inputs.append(x)
                         features.append(y)
@@ -89,13 +93,19 @@ if __name__ == '__main__':
                         pass
                     else:
                         print_exc()
-            highlight(f'{len(inputs)} new datasets collected for training.')
+            highlight(f'{len(inputs)} new datasets collected for training.\n\tdone.\n')
 
-
+            # -- backprop --
             highlight('initialize training ...')
             gym.practice(inputs, features)
-            highlight('training completed.')
+            highlight('training completed.\n')
 
+            highlight(f'next training scheduled at {p.trigger_time}')
+
+            if not p.cadence:
+                break
+
+            
 
         except KeyboardInterrupt:
 
