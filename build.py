@@ -12,16 +12,16 @@ from sklearn.preprocessing import MinMaxScaler
 
 
 
-class CustomModel(Sequential):
+class DeepNeuralNet(Sequential):
 
     '''
     Deep learning Wrapper with specific LSTM layer architecture for time series prediction.
     '''
 
-    def __init__(self, sequence_length=60, feature_length=24, epochs=1, batch_size=1, neurons=100):
+    def __init__(self, sequence_length=60, feature_length=24, epochs=1, batch_size=1, neurons=100, **kwargs):
 
         # -- initialize --
-        super(CustomModel, self).__init__()
+        super(DeepNeuralNet, self).__init__()
 
         # make parameters global
         self.sequence_length = sequence_length
@@ -67,3 +67,6 @@ class CustomModel(Sequential):
 
         # transform back
         return self.scale.inverse_transform(feature)
+    
+    def dump(self, path):
+        self.save_weights(path)

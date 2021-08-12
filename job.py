@@ -10,7 +10,7 @@ def highlight (stdout):
     sleep(.5)
 highlight('load modules ...')
 from client import client
-from build import CustomModel
+from build import DeepNeuralNet
 from tensorflow.keras.models import load_model
 from train import school
 highlight('done.\n')
@@ -33,20 +33,23 @@ highlight('done.\n')
 
 
 highlight('load model ...')
-modelPath = Path(p.model_path)
-highlight(f'check if {modelPath.absolute()} exists')
-if modelPath.exists():
-    highlight(f'model found, load ...')
-    model = load_model(modelPath.absolute(), custom_objects={"CustomModel": CustomModel})
-    del CustomModel
+weightPath = Path(p.model_path)
+highlight(f'check if {weightPath.absolute()} exists')
+model = DeepNeuralNet(p.input_size, p.feature_size, p.epochs, p.batch_size, p.neurons)
+del DeepNeuralNet
+if weightPath.exists():
+    highlight(f'weights found, load ...')
+    loadStatus = model.load_weights(weightPath.absolute())
+    print(loadStatus)
 else:
-    highlight(f'nothing found, build new model ...')
-    model = CustomModel(p.input_size, p.feature_size, p.epochs, p.batch_size, p.neurons)
+    highlight(f'nothing found, initialize new model ...')
+    
+#model.compile(optimizer='adam', loss='mean_squared_error')
 highlight('done.\n')
 
 # load training tool
 highlight('init school ...')
-gym = school(model, dumpPath=modelPath)
+gym = school(model, dumpPath=weightPath)
 highlight('done.\n')
 
 highlight('connect to arxPy API ...')
@@ -97,8 +100,10 @@ if __name__ == '__main__':
 
             # -- backprop --
             highlight('initialize training ...')
-            gym.practice(inputs, features)
+            metrics = gym.practice(inputs, features)
             highlight('training completed.\n')
+
+            highlight(f'loss: {100*metrics["loss"]}%')
 
             highlight(f'next training scheduled at {p.trigger_time}')
 

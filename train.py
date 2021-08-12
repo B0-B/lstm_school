@@ -36,5 +36,7 @@ class school:
         if self.dumpPath != None:
             path = Path(self.dumpPath).absolute()
             print(f'save model to {path} ...')
-            self.model.save(path)
+            self.model.dump(path)
             print('done.')
+        
+        return self.history
