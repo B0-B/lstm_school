@@ -37,7 +37,7 @@ weightPath = Path(p.model_path)
 highlight(f'check if {weightPath.absolute()} exists')
 model = DeepNeuralNet(p.input_size, p.feature_size, p.epochs, p.batch_size, p.neurons)
 del DeepNeuralNet
-if weightPath.exists():
+if any(Path(weightPath.parent).iterdir()):
     highlight(f'weights found, load ...')
     loadStatus = model.load_weights(weightPath.absolute())
     print(loadStatus)
