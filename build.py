@@ -59,6 +59,8 @@ class DeepNeuralNet(Sequential):
     def propagate(self, Input):
 
         # type validation
+        if type(Input) != np.ndarray:
+            Input = np.array(Input)
         if Input.shape[0] != self.sequence_length:
             raise TypeError(f'Input shape must be ({self.sequence_length},) not {Input.shape}')
 
