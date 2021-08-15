@@ -61,13 +61,16 @@ class DeepNeuralNet(Sequential):
             raise TypeError(f'Input shape must be ({self.sequence_length},) not {Input.shape}')
 
         norm = self.preprocess(Input)
-        print("norm",norm)
+
+        # reshape
+        norm = np.array([norm])
+        norm = np.reshape(norm, (norm.shape[0], norm.shape[1], 1))
 
         # propagate
         feature = self.predict(norm)
 
         # transform back
-        return self.scale.inverse_transform(feature)
+        return self.scale.inverse_transform(feature)[0]
     
     def dump(self, path):
         self.save_weights(path)
