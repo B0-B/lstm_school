@@ -23,12 +23,12 @@ class school:
         # -- devide data into inputs and features --
         self.x, self.y = [], [] # clear cache
         for i in range(l):
-            self.x.append(self.model.preprocess(inputs[i]))
-            self.y.append(self.model.preprocess(features[i]))
+            self.x.append(self.model.preprocess(inputs[i])[0])
+            self.y.append(self.model.preprocess(features[i])[0]) # the 0 index accesses the only sample in list
 
         # -- convert to array and reshape --
         self.x, self.y = np.array(self.x), np.array(self.y)
-        self.x = np.reshape(self.x, (self.x.shape[0], self.x.shape[1], 1))
+        #self.x = np.reshape(self.x, (self.x.shape[0], self.x.shape[1], 1))
 
         # -- fit --
         self.history = self.model.fit(self.x, self.y, batch_size=self.model.batch_size, epochs=self.model.epochs)
