@@ -39,4 +39,4 @@ class school:
             self.model.dump(path)
             print('done.')
         
-        return self.history
+        return self.history.history

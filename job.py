@@ -103,7 +103,7 @@ if __name__ == '__main__':
             metrics = gym.practice(inputs, features)
             highlight('training completed.\n')
 
-            highlight(f'loss: {100*metrics["loss"]}%')
+            highlight(f'loss: {100*metrics["loss"][-1]}%')
 
             highlight(f'next training scheduled at {p.trigger_time}')
 

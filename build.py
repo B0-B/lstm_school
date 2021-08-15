@@ -46,7 +46,7 @@ class DeepNeuralNet(Sequential):
         
         # -- Preprocess --
         # refresh the data iteratively
-        Input = np.array( Input )
+        Input = np.array( Input[-self.sequence_length:] )
         Input = np.reshape( Input, (Input.shape[0], 1) )
         norm = self.scale.fit_transform(Input)
 
@@ -56,11 +56,12 @@ class DeepNeuralNet(Sequential):
 
         # type validation
         if type(Input) is not np.ndarray:
-            Input = np.array(Input) # if list provided
+            Input = self.preprocess(Input)
         if Input.shape[0] != self.sequence_length:
             raise TypeError(f'Input shape must be ({self.sequence_length},) not {Input.shape}')
 
         norm = self.preprocess(Input)
+        print("norm",norm)
 
         # propagate
         feature = self.predict(norm)
