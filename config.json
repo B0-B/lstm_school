@@ -6,7 +6,7 @@
     "neurons": 500,
     "cadence": true, 
     "model_path": "./weights/test",
-    "batch_size": 5,
+    "batch_size": 1,
     "epochs": 2,
     "trigger_time": "12:00",
     "scheduled": false,
