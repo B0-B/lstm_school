@@ -24,7 +24,10 @@ class school:
         self.x, self.y = [], [] # clear cache
         for i in range(l):
             self.x.append(self.model.preprocess(inputs[i])[0])
-            self.y.append(self.model.preprocess(features[i])[0]) # the 0 index accesses the only sample in list
+            self.y.append(self.model.preprocess(features[i])[0])    # the 0 index accesses the only sample in list
+                                                                    # this is necessary as the result of preprocess 
+                                                                    # is packaged already for propagation and thus 
+                                                                    # must be unpacked to access the sample timeseries.
 
         # -- convert to array and reshape --
         self.x, self.y = np.array(self.x), np.array(self.y)

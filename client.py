@@ -60,3 +60,23 @@ class client:
                 if validName:
                     out.append(pair.replace(base, ''))
         return out
+    
+    def pairs (self, base="usd"):
+
+        '''
+        Returns all pair symbols available on kraken.
+        '''
+
+        # -- request --
+        request = urllib.request.Request("https://api.kraken.com/0/public/AssetPairs")
+
+        # -- validate --
+        ticket = urllib.request.urlopen(request)
+        raw_data = ticket.read()
+        encoding = ticket.info().get_content_charset('utf8')
+        result = json.loads(raw_data.decode(encoding))['result'].keys()
+        out, base = [], base.upper()
+        for pair in result:
+            if base == pair[-len(base):]:
+                out.append(pair)
+        return out
