@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+from jsonWrapper import JSON
 from pathlib import Path
 from traceback import print_exc
 from datetime import datetime, timedelta
@@ -15,14 +16,9 @@ from tensorflow.keras.models import load_model
 from train import school
 highlight('done.\n')
 
-
+# -- scheduler --
 def waitingForSchedule (time):
     return datetime.now().strftime("%H:%M") != time
-class JSON(dict):
-    #dot.notation access to dictionary attributes
-    __getattr__ = dict.get
-    __setattr__ = dict.__setitem__
-    __delattr__ = dict.__delitem__
 
 
 highlight('load config ...')
@@ -43,8 +39,6 @@ if any(Path(weightPath.parent).iterdir()):
     print(loadStatus)
 else:
     highlight(f'nothing found, initialize new model ...')
-    
-#model.compile(optimizer='adam', loss='mean_squared_error')
 highlight('done.\n')
 
 # load training tool
