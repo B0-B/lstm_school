@@ -11,6 +11,7 @@ from time import sleep
 def highlight (stdout):
     print(f"\t\033[1;33m{stdout}\033[1;35m")
     sleep(.2)
+highlight('INITIALIZE CATCHUP')    
 highlight('load modules ...')
 from build import DeepNeuralNet
 from tensorflow.keras.models import load_model

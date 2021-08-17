@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import json
 from jsonWrapper import JSON
 from pathlib import Path
@@ -22,7 +23,6 @@ def waitingForSchedule (time):
 
 
 highlight('load config ...')
-# load config
 with open(Path('config.json').absolute()) as f:
     p = JSON(json.loads(f.read()))
 highlight('done.\n')
@@ -38,7 +38,8 @@ if any(Path(weightPath.parent).iterdir()):
     loadStatus = model.load_weights(weightPath.absolute())
     print(loadStatus)
 else:
-    highlight(f'nothing found, initialize new model ...')
+    highlight(f'nothing found, run catchup script ...')
+    os.system('python3 catchup.py')
 highlight('done.\n')
 
 # load training tool
@@ -64,9 +65,13 @@ if __name__ == '__main__':
         while waitingForSchedule(p.trigger_time): sleep(10)
     while True:
 
-        highlight('load config ...')
+        highlight('reload config ...')
         with open(Path('config.json').absolute()) as f:
             p = JSON(json.loads(f.read()))
+        highlight('done.\n')
+
+        highlight('set hyper parameters ...')
+        model.configureHyperParameter('learning_rate', p.learning_rate)
         highlight('done.\n')
 
         try:
@@ -101,11 +106,10 @@ if __name__ == '__main__':
             highlight('initialize training ...')
             metrics = gym.practice(inputs, features)
             highlight('training completed.\n')
-
             highlight(f'loss: {100*metrics["loss"][-1]}%')
 
-            highlight(f'next training scheduled at {p.trigger_time}')
-
+            # schedule next training
+            highlight(f'next training scheduled at {p.trigger_time}\n')
             if not p.cadence:
                 break
 

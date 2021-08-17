@@ -9,6 +9,7 @@ import numpy as np
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, LSTM
 from sklearn.preprocessing import MinMaxScaler
+from tensorflow.keras import backend
 
 
 
@@ -75,3 +76,7 @@ class DeepNeuralNet(Sequential):
     
     def dump(self, path):
         self.save_weights(path)
+    
+    def configureHyperParameter(self, key, value):
+        if key == 'learning_rate':
+            backend.set_value(self.optimizer.learning_rate, value)
