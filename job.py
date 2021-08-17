@@ -64,6 +64,11 @@ if __name__ == '__main__':
         while waitingForSchedule(p.trigger_time): sleep(10)
     while True:
 
+        highlight('load config ...')
+        with open(Path('config.json').absolute()) as f:
+            p = JSON(json.loads(f.read()))
+        highlight('done.\n')
+
         try:
             
             highlight('collect datasets from arx endpoint ...')
