@@ -19,24 +19,24 @@ class DeepNeuralNet(Sequential):
     Deep learning Wrapper with specific LSTM layer architecture for time series prediction.
     '''
 
-    def __init__(self, sequence_length=60, feature_length=24, neurons=100, **kwargs):
+    def __init__(self, input_size=60, feature_size=24, neurons=100, **kwargs):
 
         # -- initialize --
         super(DeepNeuralNet, self).__init__()
 
         # make parameters global
-        self.sequence_length = sequence_length
-        self.feature_length = feature_length
+        self.input_size = input_size
+        self.feature_size = feature_size
         self.neurons = neurons
 
         # scaler
         self.scale = MinMaxScaler(feature_range=(0,1))
 
         # Build the LSTM model (ARCHITECTURE)
-        self.add(LSTM(neurons, return_sequences=True, input_shape=(sequence_length, 1)))
+        self.add(LSTM(neurons, return_sequences=True, input_shape=(input_size, 1)))
         self.add(LSTM(neurons, return_sequences=False))
-        self.add(Dense(int((neurons+feature_length)/2)))
-        self.add(Dense(feature_length))
+        self.add(Dense(int((neurons+feature_size)/2)))
+        self.add(Dense(feature_size))
 
         # compile the model
         self.compile(optimizer='adam', loss='mean_squared_error')
@@ -44,12 +44,12 @@ class DeepNeuralNet(Sequential):
     def preprocess(self, Input):
         
         # -- Preprocess --
-        # Input: a list or array of numbers with lenth sequence_length
+        # Input: a list or array of numbers with lenth input_size
         # refresh the data iteratively
         # reshape
         Input = np.array([[i] for i in Input])
         Input = self.scale.fit_transform(Input)
-        Input = np.array( [Input[-self.sequence_length:,0]] )
+        Input = np.array( [Input[-self.input_size:,0]] )
         Input = np.reshape( Input, (Input.shape[0], Input.shape[1], 1) )
         norm = Input
 
@@ -60,8 +60,8 @@ class DeepNeuralNet(Sequential):
         # type validation
         if type(Input) != np.ndarray:
             Input = np.array(Input)
-        if Input.shape[0] != self.sequence_length:
-            raise TypeError(f'Input shape must be ({self.sequence_length},) not {Input.shape}')
+        if Input.shape[0] != self.input_size:
+            raise TypeError(f'Input shape must be ({self.input_size},) not {Input.shape}')
 
         # preprocess the input
         norm = self.preprocess(Input)

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' # no warning printing
 import json
-
 from tensorflow.python.keras.backend import update
 from jsonWrapper import JSON
 from pathlib import Path
 from traceback import print_exc
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from time import sleep
 def highlight (stdout):
     print(f"\t\033[1;33m{stdout}\033[1;35m")
@@ -57,11 +57,7 @@ highlight('connect to arxPy API ...')
 arx = client(p.host, p.port)
 highlight('done.\n')
 
-# override start minutes to match with kraken
-hours = p.trigger_time.split(':')[0]
-min = str(int(float(p.trigger_time.split(':')[1])/5)*5)
-if len(min) < 2: min = '0' + min
-startTimeOverride = f'{hours}:{min}'
+
 
 # compute the start time
 if p.scheduled:
@@ -74,16 +70,21 @@ if p.scheduled:
         for i in range(l):
             if t_mem > datetime.strptime(p.trigger_times[i], "%H:%M") and t_mem < datetime.strptime(p.trigger_times[(i+1)%l], "%H:%M"):
                 next_schedule = p.trigger_times[(i+1)%l]
-    highlight(f'waiting for scheduled training at {p.trigger_times} ...')
+else:
+    
+    next_schedule = (datetime.now() + timedelta(0, 10)).strftime("%H:%M")
+    highlight(f'auto scheduled training at {next_schedule}')
 
 if __name__ == '__main__':
 
-    highlight(f'waiting for scheduled training at {p.trigger_times} ...')
+    highlight(f'waiting for scheduled training at {next_schedule} ...')
     
     while True:
+
+        
         
         if p.scheduled:
-            while waitingForSchedule(p.trigger_times): sleep(10)
+            while waitingForSchedule(next_schedule): sleep(10)
         t_mem = datetime.now().strftime("%H:%M") # memorize time
 
         highlight('reload config ...')
@@ -107,9 +108,18 @@ if __name__ == '__main__':
             for coin in arx.coins():
                 print(f'draw data for {coin} ...')
                 try:
+
+                    # override start minutes to match with kraken
+                    hours = next_schedule.split(':')[0]
+                    min = str(int(float(next_schedule.split(':')[1])/5)*5)
+                    if len(min) < 2: min = '0' + min
+                    startTimeOverride = f'{hours}:{min}'
                     
+                    # request data from arxpy
                     pair = coin + p.base_currency
                     dataFrame = arx.timeFrameData(pair, f'{startDate} {startTimeOverride}', f'{stopDate} {startTimeOverride}')["data"][-(model.input_size+model.feature_size):]
+                    
+                    # create one input data set and append to input and features array
                     x, y = [], []
                     for i in range((model.input_size+model.feature_size)):
                         closePrice = dataFrame[i][4]
@@ -120,11 +130,17 @@ if __name__ == '__main__':
                     if len(x) == model.input_size and len(y) == model.feature_size:
                         inputs.append(x)
                         features.append(y)
+
                 except Exception as e:
+
                     if "NoneType" in str(e) or "range" in str(e):
+
                         pass
+
                     else:
+
                         print_exc()
+
             highlight(f'{len(inputs)} new datasets collected for training.\n\tdone.\n')
 
             # -- backprop --
@@ -152,4 +168,4 @@ if __name__ == '__main__':
         
         finally:
         
-            pass
+            sleep(100)

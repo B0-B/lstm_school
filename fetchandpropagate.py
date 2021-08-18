@@ -24,7 +24,7 @@ with open(Path('config.json').absolute()) as f:
 
 # fetch some latest data as test data
 c = client(p.host, p.port)
-data = [i[4] for i in c.timeFrameData('xdgusd', '08-12-2021 9:00', '08-15-2021 9:00')['data']]
+data = [i[4] for i in c.timeFrameData('grtusd', '08-12-2021 9:00', '08-16-2021 9:00')['data']]
 #print("data", data)
 
 # propagate 
