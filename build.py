@@ -19,7 +19,7 @@ class DeepNeuralNet(Sequential):
     Deep learning Wrapper with specific LSTM layer architecture for time series prediction.
     '''
 
-    def __init__(self, sequence_length=60, feature_length=24, epochs=1, batch_size=1, neurons=100, **kwargs):
+    def __init__(self, sequence_length=60, feature_length=24, neurons=100, **kwargs):
 
         # -- initialize --
         super(DeepNeuralNet, self).__init__()
@@ -27,8 +27,6 @@ class DeepNeuralNet(Sequential):
         # make parameters global
         self.sequence_length = sequence_length
         self.feature_length = feature_length
-        self.epochs = epochs
-        self.batch_size = batch_size
         self.neurons = neurons
 
         # scaler
@@ -76,7 +74,3 @@ class DeepNeuralNet(Sequential):
     
     def dump(self, path):
         self.save_weights(path)
-    
-    def configureHyperParameter(self, key, value):
-        if key == 'learning_rate':
-            backend.set_value(self.optimizer.learning_rate, value)

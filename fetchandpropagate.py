@@ -17,14 +17,14 @@ class JSON(dict):
 # load model
 with open(Path('config.json').absolute()) as f:
     p = JSON(json.loads(f.read()))
-    model = DeepNeuralNet(p.input_size, p.feature_size, p.epochs, p.batch_size, p.neurons)
+    model = DeepNeuralNet(p.input_size, p.feature_size, p.neurons)
     del DeepNeuralNet
     loadStatus = model.load_weights(Path(p.model_path).absolute())
     print(loadStatus)
 
 # fetch some latest data as test data
 c = client(p.host, p.port)
-data = [i[4] for i in c.timeFrameData('xethzusd', '08-12-2021 9:00', '08-15-2021 9:00')['data']]
+data = [i[4] for i in c.timeFrameData('xdgusd', '08-12-2021 9:00', '08-15-2021 9:00')['data']]
 #print("data", data)
 
 # propagate 

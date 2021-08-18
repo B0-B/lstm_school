@@ -32,6 +32,7 @@ with open(Path('config.json').absolute()) as f:
     p = JSON(json.loads(f.read()))
 highlight('done.\n')
 
+
 # -- load arxpy client --
 arx = client(p.host, p.port)
 
@@ -40,7 +41,7 @@ arx = client(p.host, p.port)
 highlight('load model ...')
 weightPath = Path(p.model_path)
 highlight(f'check if {weightPath.absolute()} exists')
-model = DeepNeuralNet(p.input_size, p.feature_size, p.epochs, p.batch_size, p.neurons)
+model = DeepNeuralNet(p.input_size, p.feature_size, p.neurons)
 del DeepNeuralNet
 if any(Path(weightPath.parent).iterdir()):
     highlight(f'weights found, load ...')
@@ -84,6 +85,12 @@ for pair, Set in timeSets.items():
         y.append(Set[i+p.input_size:i+p.input_size+p.feature_size])
 highlight('done.\n')
 
+highlight('update hyper parameters ...')
+School.learning_rate = p.learning_rate
+School.batch_size = p.batch_size
+School.validation_split = p.validation_split
+School.epochs = p.epochs_catchup
+highlight('done.\n')
 
 
 highlight('start training ...')

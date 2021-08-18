@@ -13,6 +13,12 @@ class school:
         self.x, self.y = [], [] # workload cache
         self.dumpPath = dumpPath
 
+        # -- hyper parameters --
+        self.learning_rate = 0.005
+        self.validation_split = 0.0
+        self.batch_size = 1
+        self.epochs = 1
+
     def practice(self, inputs, features):
 
         # -- type evaluation --
@@ -34,7 +40,7 @@ class school:
         #self.x = np.reshape(self.x, (self.x.shape[0], self.x.shape[1], 1))
 
         # -- fit --
-        self.history = self.model.fit(self.x, self.y, batch_size=self.model.batch_size, epochs=self.model.epochs)
+        self.history = self.model.fit(self.x, self.y, batch_size=self.batch_size, epochs=self.epochs, validation_split=self.validation_split)
 
         if self.dumpPath != None:
             path = Path(self.dumpPath).absolute()

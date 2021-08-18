@@ -2,6 +2,8 @@
 
 import os
 import json
+
+from tensorflow.python.keras.backend import update
 from jsonWrapper import JSON
 from pathlib import Path
 from traceback import print_exc
@@ -18,8 +20,12 @@ from train import school
 highlight('done.\n')
 
 # -- scheduler --
-def waitingForSchedule (time):
-    return datetime.now().strftime("%H:%M") != time
+def waitingForSchedule (times):
+    # times is an array of time format strings
+    for t in times:
+        if datetime.now().strftime("%H:%M") == t:
+            return False
+    return True
 
 
 highlight('load config ...')
@@ -31,7 +37,7 @@ highlight('done.\n')
 highlight('load model ...')
 weightPath = Path(p.model_path)
 highlight(f'check if {weightPath.absolute()} exists')
-model = DeepNeuralNet(p.input_size, p.feature_size, p.epochs, p.batch_size, p.neurons)
+model = DeepNeuralNet(p.input_size, p.feature_size, p.neurons)
 del DeepNeuralNet
 if any(Path(weightPath.parent).iterdir()):
     highlight(f'weights found, load ...')
@@ -57,21 +63,39 @@ min = str(int(float(p.trigger_time.split(':')[1])/5)*5)
 if len(min) < 2: min = '0' + min
 startTimeOverride = f'{hours}:{min}'
 
+# compute the start time
+if p.scheduled:
+    if len(p.trigger_times) == 1:
+        next_schedule = p.trigger_times[0]
+    else:
+        p.trigger_times.sort()
+        t_mem = datetime.now()
+        l = len(p.trigger_times)
+        for i in range(l):
+            if t_mem > datetime.strptime(p.trigger_times[i], "%H:%M") and t_mem < datetime.strptime(p.trigger_times[(i+1)%l], "%H:%M"):
+                next_schedule = p.trigger_times[(i+1)%l]
+    highlight(f'waiting for scheduled training at {p.trigger_times} ...')
 
 if __name__ == '__main__':
 
-    highlight(f'waiting for scheduled training at {p.trigger_time} ...')
-    if p.scheduled:
-        while waitingForSchedule(p.trigger_time): sleep(10)
+    highlight(f'waiting for scheduled training at {p.trigger_times} ...')
+    
     while True:
+        
+        if p.scheduled:
+            while waitingForSchedule(p.trigger_times): sleep(10)
+        t_mem = datetime.now().strftime("%H:%M") # memorize time
 
         highlight('reload config ...')
         with open(Path('config.json').absolute()) as f:
             p = JSON(json.loads(f.read()))
         highlight('done.\n')
 
-        highlight('set hyper parameters ...')
-        model.configureHyperParameter('learning_rate', p.learning_rate)
+        highlight('update hyper parameters ...')
+        gym.learning_rate = p.learning_rate
+        gym.batch_size = p.batch_size
+        gym.validation_split = p.validation_split
+        gym.epochs = p.epochs
         highlight('done.\n')
 
         try:
@@ -79,20 +103,21 @@ if __name__ == '__main__':
             highlight('collect datasets from arx endpoint ...')
             inputs, features = [], []
             stopDate = datetime.now().strftime('%m-%d-%y') # now
-            startDate = (datetime.today() - timedelta(days=int((p.input_size+p.feature_size)/288)+1)).strftime('%m-%d-%y') # works for 5 min intervals
+            startDate = (datetime.today() - timedelta(days=int((model.input_size+model.feature_size)/288)+1)).strftime('%m-%d-%y') # works for 5 min intervals
             for coin in arx.coins():
+                print(f'draw data for {coin} ...')
                 try:
+                    
                     pair = coin + p.base_currency
-                    dataFrame = arx.timeFrameData(pair, f'{startDate} {startTimeOverride}', f'{stopDate} {startTimeOverride}')["data"][-(p.input_size+p.feature_size):]
-                    print(type(dataFrame))
+                    dataFrame = arx.timeFrameData(pair, f'{startDate} {startTimeOverride}', f'{stopDate} {startTimeOverride}')["data"][-(model.input_size+model.feature_size):]
                     x, y = [], []
-                    for i in range((p.input_size+p.feature_size)):
+                    for i in range((model.input_size+model.feature_size)):
                         closePrice = dataFrame[i][4]
-                        if i < p.input_size:
+                        if i < model.input_size:
                             x.append(closePrice)
                         else:
                             y.append(closePrice)
-                    if len(x) == p.input_size and len(y) == p.feature_size:
+                    if len(x) == model.input_size and len(y) == model.feature_size:
                         inputs.append(x)
                         features.append(y)
                 except Exception as e:
@@ -108,12 +133,12 @@ if __name__ == '__main__':
             highlight('training completed.\n')
             highlight(f'loss: {100*metrics["loss"][-1]}%')
 
-            # schedule next training
-            highlight(f'next training scheduled at {p.trigger_time}\n')
+            # schedule next training only when on cadence
             if not p.cadence:
                 break
-
-            
+            else:
+                next_schedule = p.trigger_times[(p.trigger_times.index(t_mem)+1)%len(p.trigger_times)]
+                highlight(f'next training scheduled at {next_schedule}\n')
 
         except KeyboardInterrupt:
 
@@ -127,4 +152,4 @@ if __name__ == '__main__':
         
         finally:
         
-            sleep(p.sleep_min*60)
+            pass
