@@ -37,7 +37,7 @@ highlight('done.\n')
 highlight('load model ...')
 weightPath = Path(p.model_path)
 highlight(f'check if {weightPath.absolute()} exists')
-model = DeepNeuralNet(p.input_size, p.feature_size, p.neurons)
+model = DeepNeuralNet(input_size=p.input_size, feature_size=p.feature_size, neurons=p.neurons)
 del DeepNeuralNet
 if any(Path(weightPath.parent).iterdir()):
     highlight(f'weights found, load ...')
@@ -80,8 +80,6 @@ if __name__ == '__main__':
     highlight(f'waiting for scheduled training at {next_schedule} ...')
     
     while True:
-
-        
         
         if p.scheduled:
             while waitingForSchedule(next_schedule): sleep(10)
@@ -103,18 +101,21 @@ if __name__ == '__main__':
             
             highlight('collect datasets from arx endpoint ...')
             inputs, features = [], []
+            
+            # override start minutes to match with kraken
+            hours = next_schedule.split(':')[0]
+            min = str(int(float(next_schedule.split(':')[1])/5)*5)
+            if len(min) < 2: min = '0' + min
+            startTimeOverride = f'{hours}:{min}'
+            
+            # define final start and stop point
             stopDate = datetime.now().strftime('%m-%d-%y') # now
             startDate = (datetime.today() - timedelta(days=int((model.input_size+model.feature_size)/288)+1)).strftime('%m-%d-%y') # works for 5 min intervals
+            
             for coin in arx.coins():
                 print(f'draw data for {coin} ...')
                 try:
 
-                    # override start minutes to match with kraken
-                    hours = next_schedule.split(':')[0]
-                    min = str(int(float(next_schedule.split(':')[1])/5)*5)
-                    if len(min) < 2: min = '0' + min
-                    startTimeOverride = f'{hours}:{min}'
-                    
                     # request data from arxpy
                     pair = coin + p.base_currency
                     dataFrame = arx.timeFrameData(pair, f'{startDate} {startTimeOverride}', f'{stopDate} {startTimeOverride}')["data"][-(model.input_size+model.feature_size):]
@@ -127,11 +128,15 @@ if __name__ == '__main__':
                             x.append(closePrice)
                         else:
                             y.append(closePrice)
+                    
+                    # verify size before packing
                     if len(x) == model.input_size and len(y) == model.feature_size:
                         inputs.append(x)
                         features.append(y)
 
                 except Exception as e:
+
+                    print_exc()
 
                     if "NoneType" in str(e) or "range" in str(e):
 

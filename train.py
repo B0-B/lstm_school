@@ -21,6 +21,8 @@ class school:
 
     def practice(self, inputs, features):
 
+        # inputs and features are list of input and feature arrays (or lists), resp.
+
         # -- type evaluation --
         l = len(inputs)
         if l != len(features):
