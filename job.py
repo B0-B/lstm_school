@@ -61,15 +61,19 @@ highlight('done.\n')
 
 # compute the start time
 if p.scheduled:
+
     if len(p.trigger_times) == 1:
         next_schedule = p.trigger_times[0]
     else:
+        next_schedule = None
         p.trigger_times.sort()
         t_mem = datetime.now()
         l = len(p.trigger_times)
-        for i in range(l):
-            if t_mem > datetime.strptime(p.trigger_times[i], "%H:%M") and t_mem < datetime.strptime(p.trigger_times[(i+1)%l], "%H:%M"):
-                next_schedule = p.trigger_times[(i+1)%l]
+        for i in range(1, l):
+            if datetime.strptime(t_mem.strftime("%H:%M"), "%H:%M") < datetime.strptime(p.trigger_times[i], "%H:%M"):
+                next_schedule = p.trigger_times[i]
+        if next_schedule == None:
+            next_schedule = p.trigger_times[0]
 else:
     
     next_schedule = (datetime.now() + timedelta(0, 10)).strftime("%H:%M")
@@ -88,6 +92,7 @@ if __name__ == '__main__':
         highlight('reload config ...')
         with open(Path('config.json').absolute()) as f:
             p = JSON(json.loads(f.read()))
+            p.trigger_times.sort()
         highlight('done.\n')
 
         highlight('update hyper parameters ...')
@@ -136,7 +141,7 @@ if __name__ == '__main__':
 
                 except Exception as e:
 
-                    print_exc()
+                    #print_exc()
 
                     if "NoneType" in str(e) or "range" in str(e):
 
@@ -154,13 +159,6 @@ if __name__ == '__main__':
             highlight('training completed.\n')
             highlight(f'loss: {100*metrics["loss"][-1]}%')
 
-            # schedule next training only when on cadence
-            if not p.cadence:
-                break
-            else:
-                next_schedule = p.trigger_times[(p.trigger_times.index(t_mem)+1)%len(p.trigger_times)]
-                highlight(f'next training scheduled at {next_schedule}\n')
-
         except KeyboardInterrupt:
 
             highlight('interrupt.')
@@ -172,5 +170,12 @@ if __name__ == '__main__':
             print_exc()
         
         finally:
+
+            # schedule next training only when on cadence
+            if not p.cadence:
+                break
+            else:
+                next_schedule = p.trigger_times[(p.trigger_times.index(t_mem)+1)%len(p.trigger_times)]
+                highlight(f'next training scheduled at {next_schedule}\n')
         
             sleep(100)
