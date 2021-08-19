@@ -28,10 +28,12 @@ def waitingForSchedule (times):
     return True
 
 
+
 highlight('load config ...')
 with open(Path('config.json').absolute()) as f:
     p = JSON(json.loads(f.read()))
 highlight('done.\n')
+
 
 
 highlight('load model ...')
@@ -61,7 +63,6 @@ highlight('done.\n')
 
 # compute the start time
 if p.scheduled:
-
     if len(p.trigger_times) == 1:
         next_schedule = p.trigger_times[0]
     else:
@@ -78,6 +79,8 @@ else:
     
     next_schedule = (datetime.now() + timedelta(0, 10)).strftime("%H:%M")
     highlight(f'auto scheduled training at {next_schedule}')
+
+
 
 if __name__ == '__main__':
 
