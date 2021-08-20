@@ -20,11 +20,10 @@ from train import school
 highlight('done.\n')
 
 # -- scheduler --
-def waitingForSchedule (times):
+def waitingForSchedule (time):
     # times is an array of time format strings
-    for t in times:
-        if datetime.now().strftime("%H:%M") == t:
-            return False
+    if datetime.now().strftime("%H:%M") == time:
+        return False
     return True
 
 
@@ -71,8 +70,10 @@ if p.scheduled:
         t_mem = datetime.now()
         l = len(p.trigger_times)
         for i in range(1, l):
+            print('test2', t_mem.strftime("%H:%M"), p.trigger_times[i])
             if datetime.strptime(t_mem.strftime("%H:%M"), "%H:%M") < datetime.strptime(p.trigger_times[i], "%H:%M"):
                 next_schedule = p.trigger_times[i]
+                break
         if next_schedule == None:
             next_schedule = p.trigger_times[0]
 else:
