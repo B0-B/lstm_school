@@ -59,26 +59,14 @@ highlight('done.\n')
 
 
 
-# compute time frame
-Days = 4
-dt = datetime.now()-timedelta(days=1)
-min_now = str(int(int(dt.strftime("%M"))/5)*5)
-if len(min_now) < 2: min_now = "0" + min_now
-t_now = f'''{dt.strftime("%m-%d-%y")} {dt.strftime("%H")}:{min_now}'''
-t = datetime.strptime(t_now, "%m-%d-%y %H:%M") - timedelta(days=Days)
-t_then = t.strftime("%m-%d-%y %H:%M ")
-
-
-
-highlight(f'draw the current state from arxPy from {t_then} to {t_now}...')
+# get all data
+highlight('draw the current state from arxPy...')
 pairs = arx.pairs()
 timeSets = {}
 for pair in pairs:
     try:
         print(f'draw data for {pair} ...')
-        data = arx.timeFrameData(pair, t_then, t_now)['data']
-        #print(data)
-        timeseries = [d[4] for d in data] # 4th element is the closing price
+        timeseries = [d[4] for d in arx.allData(pair)['data']] # 4th element is the closing price
         timeSets[pair] = timeseries
         print(f'success!', end='\r')
     except:
@@ -89,14 +77,15 @@ highlight('\ndone.\n')
 
 
 
-highlight('slice data into training sets ...')
+highlight('create a random pool of training data ...')
 x, y = [], []
-screening_step = int(p.input_size/2)
-for pair, Set in timeSets.items():
-    for i in range(0, len(Set)-p.input_size-p.feature_size, screening_step):
-        x.append(Set[i:i+p.input_size])
-        y.append(Set[i+p.input_size:i+p.input_size+p.feature_size])
+step = int(p.input_size+p.feature_size)
+for Set in timeSets.values(): # pick for each coin a random set of same size
+    anc = np.random.choice(len(Set)-step-1)
+    x.append(Set[anc:anc+p.input_size])
+    y.append(Set[anc+p.input_size:anc+p.input_size+p.feature_size])
 highlight('done.\n')
+
 
 
 highlight('update hyper parameters ...')
@@ -105,6 +94,7 @@ School.batch_size = p.batch_size
 School.validation_split = p.validation_split
 School.epochs = p.epochs_workout
 highlight('done.\n')
+
 
 
 highlight('start training ...')
