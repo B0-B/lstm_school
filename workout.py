@@ -81,9 +81,10 @@ highlight('create a random pool of training data ...')
 x, y = [], []
 step = int(p.input_size+p.feature_size)
 for Set in timeSets.values(): # pick for each coin a random set of same size
-    anc = np.random.choice(len(Set)-step-1)
-    x.append(Set[anc:anc+p.input_size])
-    y.append(Set[anc+p.input_size:anc+p.input_size+p.feature_size])
+    if len(Set) >= step:
+        anc = np.random.choice(len(Set)-step-1)
+        x.append(Set[anc:anc+p.input_size])
+        y.append(Set[anc+p.input_size:anc+p.input_size+p.feature_size])
 highlight('done.\n')
 
 

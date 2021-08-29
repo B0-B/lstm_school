@@ -33,9 +33,12 @@ class DeepNeuralNet(Sequential):
         self.scale = MinMaxScaler(feature_range=(0,1))
 
         # Build the LSTM model (ARCHITECTURE)
-        self.add(LSTM(neurons, return_sequences=True, input_shape=(input_size, 1)))
-        self.add(LSTM(neurons, return_sequences=False))
-        self.add(Dense(int((neurons+feature_size)/2)))
+        self.add(Dense(input_size, input_shape=(input_size, 1)))
+        self.add(LSTM(input_size, return_sequences=True))
+        self.add(Dense(int((0.3*neurons))))
+        self.add(LSTM(int(0.3*neurons), return_sequences=True))
+        self.add(LSTM(int(0.2*neurons), return_sequences=False)) # return_sequences must be false
+        self.add(Dense(int(0.2*neurons)))
         self.add(Dense(feature_size))
 
         # compile the model

@@ -76,13 +76,16 @@ highlight('\ndone.\n')
 
 
 
-highlight('slice data into training sets ...')
+highlight(f'slice data randomly into training sets ...\n{p.samples_per_instrument} samples per instrument/pair')
 x, y = [], []
 screening_step = int(p.input_size/2)
 for pair, Set in timeSets.items():
-    for i in range(0, len(Set)-p.input_size-p.feature_size, screening_step):
-        x.append(Set[i:i+p.input_size])
-        y.append(Set[i+p.input_size:i+p.input_size+p.feature_size])
+    l, margin = len(Set), p.input_size+p.feature_size
+    if l > 2*margin:
+        for i in range(p.samples_per_instrument):
+            u = np.random.choice(l-margin-1)
+            x.append(Set[u:u+p.input_size])
+            y.append(Set[u+p.input_size:u+margin])
 highlight('done.\n')
 
 highlight('update hyper parameters ...')
